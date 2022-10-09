@@ -1,4 +1,5 @@
 import re
+import os
 import sys
 
 from typing import Any
@@ -9,7 +10,7 @@ from pathlib import Path
 """
 Usage:
     Call with python main.py <path-to-input-file> <path-to-output-file>
-    
+
     Only partially tested
 """
 
@@ -48,11 +49,30 @@ def scan_images(content: str) -> list[Any]:
     return [[url, get_filename(url)] for url in images]
 
 
-def download_tuples(tuples: list[Any]) -> None:
+def compress_image(fn: str, max_size: int = 1048576) -> None:
+    # max_size = 1MB
+    if Path(fn).suffix == '.gif':
+        print(f'Skipping compression of {Path(fn).suffix} ({fn})')
+        return
+
+    if os.stat(fn).st_size > max_size:
+        print("Compressing ", fn)
+        raise NotImplementedError
+    else:
+        print(f'Skipping compression of {Path(fn).suffix} ({fn})')
+        raise NotImplementedError
+
+
+def download_tuples(tuples: list[Any], compress: bool = False) -> None:
     for url, fn in tuples:
         Path(fn).parent.mkdir(exist_ok=True, parents=True)
-        if not Path(fn).is_file():
-            urlretrieve(url, fn)
+        if Path(fn).is_file():
+            continue
+
+        urlretrieve(url, fn)
+        if compress:
+            compress_image(fn)
+
 
 
 def update_content(content: str, tuples: list[Any]) -> str:
