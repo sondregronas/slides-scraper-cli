@@ -36,7 +36,7 @@ def get_filename(url: str, folder: str = FOLDER, def_ext: str = FALLBACK_EXT) ->
 
     # Giphy gifs
     for name, ext in re.findall(r'giphy\.com/media/(.+)/[^.]+(.+)$', url):
-        return f'{name}{ext}'
+        return f'{folder}{name}{ext}'
 
     if p.suffix:
         return f'{folder}{p.name}'
