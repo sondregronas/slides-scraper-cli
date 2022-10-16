@@ -74,7 +74,7 @@ def compress_image(fn: str, max_size: int = COMP_TRESHOLD) -> None:
         # Resize large images
         f_x, f_y = img.size[0] / MAX_RESOLUTION[0], img.size[1] / MAX_RESOLUTION[1]
         f = f_x if f_x > f_y else f_y
-        img = img.resize((int(img.size[0]/f), int(img.size[1]/f)), Image.LANCZOS)
+        img = img.resize((int(img.size[0]/f), int(img.size[1]/f)), Image.Resampling.LANCZOS)
 
     # Save compressed image
     img.save(fn, quality=QUALITY, optimize=True, format='webp')
