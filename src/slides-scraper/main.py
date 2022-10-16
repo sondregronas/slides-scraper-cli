@@ -6,6 +6,7 @@ from typing import Any
 from urllib.parse import urlparse
 from urllib.request import urlretrieve
 from pathlib import Path
+from PIL import Image
 
 """
 Usage:
@@ -17,9 +18,11 @@ Usage:
 input = sys.argv[1]
 output = sys.argv[2]
 
-COMPRESS = False  # Not implemented
+COMPRESS = True  # Not implemented
 COMP_TRESHOLD = 1048576  # 1MB
-IGNORE_COMPRESSED_FORMATS = ['.gif']
+QUALITY = 90
+MAX_RESOLUTION = [1920, 1080]
+IGNORE_COMPRESSED_FORMATS = ['.webm']
 FOLDER = "attachments/"
 FALLBACK_EXT = 'jpg'
 
@@ -58,16 +61,23 @@ def scan_images(content: str) -> list[Any]:
 
 
 def compress_image(fn: str, max_size: int = COMP_TRESHOLD) -> None:
-    if Path(fn).suffix in IGNORE_COMPRESSED_FORMATS:
-        print(f'Skipping compression of {Path(fn).suffix} ({fn})')
+    if os.stat(fn).st_size < max_size or \
+       Path(fn).suffix in IGNORE_COMPRESSED_FORMATS:
         return
 
-    if os.stat(fn).st_size > max_size:
-        print("Compressing ", fn)
-        raise NotImplementedError
-    else:
-        print(f'Skipping compression of {Path(fn).suffix} ({fn})')
-        raise NotImplementedError
+    img = Image.open(fn)
+    if Path(fn).suffix == '.gif':
+        print('Unable to compress gifs (yet)')
+        return
+
+    if list(img.size) > MAX_RESOLUTION:
+        # Resize large images
+        f_x, f_y = img.size[0] / MAX_RESOLUTION[0], img.size[1] / MAX_RESOLUTION[1]
+        f = f_x if f_x > f_y else f_y
+        img = img.resize((int(img.size[0]/f), int(img.size[1]/f)), Image.LANCZOS)
+
+    # Save compressed image
+    img.save(fn, quality=QUALITY, optimize=True, format='webp')
 
 
 def download_tuples(tuples: list[Any], compress: bool = False) -> None:
